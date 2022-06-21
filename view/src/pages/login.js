@@ -1,5 +1,7 @@
 // Material UI components
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useHistory } from "react-router-dom";
+
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -42,130 +44,108 @@ const styles = (theme) => ({
 	}
 });
 
-class login extends Component {
-	constructor(props) {
-		super(props);
+function Login (props) {
 
-		this.state = {
-			email: '',
-			password: '',
-			errors: [],
-			loading: false
-		};
-	}
+	const history = useHistory();
 
-	componentWillReceiveProps(nextProps) {
-		if("errors" in nextProps.UI){
-			if (nextProps.UI.errors) {
-			this.setState({
-				errors: nextProps.UI.errors
-			});
-		}
-		}
-		
-	}
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [errors, setErrors] = useState([]);
+	const [loading, setLoading] = useState(false);
 
-	handleChange = (event) => {
-		this.setState({
-			[event.target.name]: event.target.value
-		});
-	};
+	const { classes } = props
 
-	handleSubmit = (event) => {
+	const handleSubmit = (event) => {
 		event.preventDefault();
-		this.setState({ loading: true });
+		console.log(email, password);
+		setLoading(true);
 		const userData = {
-			email: this.state.email,
-			password: this.state.password
+			email,
+			password
 		};
+		setEmail()
 		axios
 			.post('/login', userData)
-			.then((response) => {
+			.then( (response) => {
+				console.log(response)
 				localStorage.setItem('AuthToken', `Bearer ${response.data.token}`);
-				this.setState({
-					loading: false
-				});
-				this.props.history.push('/');
+				setLoading(false)
+				history.push('/');
 			})
 			.catch((error) => {
-				this.setState({
-					errors: error.response.data,
-					loading: false
-				});
+				console.log(error)
+				setLoading(false);
+				setErrors(error.response.data)
 			});
 	};
 
-	render() {
-		const { classes } = this.props;
-		const { errors, loading } = this.state;
-		return (
-			<Container component="main" maxWidth="xs">
-				<CssBaseline />
-				<div className={classes.paper}>
-					<Avatar className={classes.avatar}>
-						<LockOutlinedIcon />
-					</Avatar>
-					<Typography component="h1" variant="h5">
-						Login
-					</Typography>
-					<form className={classes.form} noValidate>
-						<TextField
-							variant="outlined"
-							margin="normal"
-							required
-							fullWidth
-							id="email"
-							label="Email Address"
-							name="email"
-							autoComplete="email"
-							autoFocus
-							helperText={errors.email}
-							error={errors.email ? true : false}
-							onChange={this.handleChange}
-						/>
-						<TextField
-							variant="outlined"
-							margin="normal"
-							required
-							fullWidth
-							name="password"
-							label="Password"
-							type="password"
-							id="password"
-							autoComplete="current-password"
-							helperText={errors.password}
-							error={errors.password ? true : false}
-							onChange={this.handleChange}
-						/>
-						<Button
-							type="submit"
-							fullWidth
-							variant="contained"
-							color="primary"
-							className={classes.submit}
-							onClick={this.handleSubmit}
-							disabled={loading || !this.state.email || !this.state.password}
-						>
-							Sign In
-							{loading && <CircularProgress size={30} className={classes.progess} />}
-						</Button>
-						<Grid container>
-							<Grid item>
-								<Link href="signup" variant="body2">
-									{"Don't have an account? Sign Up"}
-								</Link>
-							</Grid>
-						</Grid>
-						{errors.general && (
-							<Typography variant="body2" className={classes.customError}>
-								{errors.general}
-							</Typography>
-						)}
-					</form>
-				</div>
-			</Container>
-		);
-	}
+	return (
+		<Container component="main" maxWidth="xs">
+			<CssBaseline />
+			<div className={classes.paper}>
+				<Avatar className={classes.avatar}>
+					<LockOutlinedIcon />
+				</Avatar>
+				<Typography component="h1" variant="h5">
+					Login
+				</Typography>
+				<form className={classes.form} noValidate>
+			<TextField
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						id="email"
+						label="Email Address"
+						name="email"
+						autoComplete="email"
+						autoFocus
+						helperText={errors.email}
+						error={errors.email ? true : false}
+						onChange={ (e) =>  setEmail(e.target.value) }
+					/>
+					<TextField
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						name="password"
+						label="Password"
+						type="password"
+						id="password"
+						autoComplete="current-password"
+						helperText={errors.password}
+						error={errors.password ? true : false}
+						onChange={ (e) => setPassword(e.target.value) }
+					/>
+					<Button
+						type="submit"
+						fullWidth
+						variant="contained"
+						color="primary"
+						// className={classes.submit}
+						onClick={handleSubmit}
+						disabled={ loading || !email || !password}
+					>
+						Sign In
+						{loading && <CircularProgress size={30} className={classes.progess} />}
+					</Button>
+		 			<Grid container>
+		 				<Grid item>
+		 					<Link href="signup" variant="body2">
+		 						{"Don't have an account? Sign Up"}
+		 					</Link>
+		 				</Grid>
+		 			</Grid>
+		 			{ errors.general && (
+		 				<Typography variant="body2" className={ classes.customError }>
+		 					{ errors.general }
+		 				</Typography>
+		 			)}
+		 		</form>
+		 	</div>
+		 </Container>
+	);
 }
 
-export default withStyles(styles)(login);
+export default withStyles(styles)(Login);
