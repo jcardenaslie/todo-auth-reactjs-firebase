@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useHistory } from "react-router-dom";
 
 import withStyles from '@material-ui/core/styles/withStyles';
 import Typography from '@material-ui/core/Typography';
@@ -93,57 +94,46 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 	return <Slide direction="up" ref={ref} {...props} />;
 });
 
-class todo extends Component {
-	constructor(props) {
-		super(props);
+function Todo ( props ) {
 
-		this.state = {
-			todos: '',
-			title: '',
-			body: '',
-			todoId: '',
-			errors: [],
-			open: false,
-			uiLoading: true,
-			buttonType: '',
-			viewOpen: false
-		};
+	const history = useHistory()
 
-		this.deleteTodoHandler = this.deleteTodoHandler.bind(this);
-		this.handleEditClickOpen = this.handleEditClickOpen.bind(this);
-		this.handleViewOpen = this.handleViewOpen.bind(this);
-	}
+	const [todos, settodos] = useState("");
+	const [title, settitle] = useState("");
+	const [body, setbody] = useState("");
+	const [todoId, settodoId] = useState("");
+	const [errors, seterrors] = useState([]);
+	const [open, setopen] = useState(false);
+	const [uiLoading, setuiLoading] = useState(true);
+	const [buttonType, setbuttonType] = useState("");
+	const [viewOpen, setviewOpen] = useState(false);
 
-	handleChange = (event) => {
-		this.setState({
-			[event.target.name]: event.target.value
-		});
-	};
 
-	componentWillMount = () => {
-		authMiddleWare(this.props.history);
+	const { classes } = props;
+
+	useEffect ( ()=> {
+		authMiddleWare(history);
 		const authToken = localStorage.getItem('AuthToken');
 		axios.defaults.headers.common = { Authorization: `${authToken}` };
 		axios
 			.get('/todos')
 			.then((response) => {
-				this.setState({
-					todos: response.data,
-					uiLoading: false
-				});
+				// 	todos: response.data,
+				settodos(response.data);
+				setuiLoading(false)
 			})
 			.catch((err) => {
 				console.log(err);
 			});
-	};
+	},[]);
 
-	deleteTodoHandler(data) {
-		authMiddleWare(this.props.history);
+	function deleteTodoHandler(data) {
+		authMiddleWare(history);
 		const authToken = localStorage.getItem('AuthToken');
 		axios.defaults.headers.common = { Authorization: `${authToken}` };
 		let todoId = data.todo.todoId;
 		axios
-			.delete(`todo/${todoId}`)
+			.delete(`todos/${todoId}`)
 			.then(() => {
 				window.location.reload();
 			})
@@ -152,7 +142,7 @@ class todo extends Component {
 			});
 	}
 
-	handleEditClickOpen(data) {
+	function handleEditClickOpen(data) {
 		this.setState({
 			title: data.todo.title,
 			body: data.todo.body,
@@ -162,7 +152,7 @@ class todo extends Component {
 		});
 	}
 
-	handleViewOpen(data) {
+	function handleViewOpen(data) {
 		this.setState({
 			title: data.todo.title,
 			body: data.todo.body,
@@ -170,224 +160,220 @@ class todo extends Component {
 		});
 	}
 
-	render() {
-		const DialogTitle = withStyles(styles)((props) => {
-			const { children, classes, onClose, ...other } = props;
-			return (
-				<MuiDialogTitle disableTypography className={classes.root} {...other}>
-					<Typography variant="h6">{children}</Typography>
-					{onClose ? (
-						<IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
-							<CloseIcon />
-						</IconButton>
-					) : null}
-				</MuiDialogTitle>
-			);
-		});
-
-		const DialogContent = withStyles((theme) => ({
-			viewRoot: {
-				padding: theme.spacing(2)
-			}
-		}))(MuiDialogContent);
-
-		dayjs.extend(relativeTime);
-		const { classes } = this.props;
-		const { open, errors, viewOpen } = this.state;
-
-		const handleClickOpen = () => {
-			this.setState({
-				todoId: '',
-				title: '',
-				body: '',
-				buttonType: '',
-				open: true
-			});
-		};
-
-		const handleSubmit = (event) => {
-			authMiddleWare(this.props.history);
-			event.preventDefault();
-			const userTodo = {
-				title: this.state.title,
-				body: this.state.body
-			};
-			let options = {};
-			if (this.state.buttonType === 'Edit') {
-				options = {
-					url: `/todo/${this.state.todoId}`,
-					method: 'put',
-					data: userTodo
-				};
-			} else {
-				options = {
-					url: '/todo',
-					method: 'post',
-					data: userTodo
-				};
-			}
-			const authToken = localStorage.getItem('AuthToken');
-			axios.defaults.headers.common = { Authorization: `${authToken}` };
-			axios(options)
-				.then(() => {
-					this.setState({ open: false });
-					window.location.reload();
-				})
-				.catch((error) => {
-					this.setState({ open: true, errors: error.response.data });
-					console.log(error);
-				});
-		};
-
-		const handleViewClose = () => {
-			this.setState({ viewOpen: false });
-		};
-
-		const handleClose = (event) => {
-			this.setState({ open: false });
-		};
-
-		if (this.state.uiLoading === true) {
-			return (
-				<main className={classes.content}>
-					<div className={classes.toolbar} />
-					{this.state.uiLoading && <CircularProgress size={150} className={classes.uiProgess} />}
-				</main>
-			);
-		} else {
-			return (
-				<main className={classes.content}>
-					<div className={classes.toolbar} />
-
-					<IconButton
-						className={classes.floatingButton}
-						color="primary"
-						aria-label="Add Todo"
-						onClick={handleClickOpen}
-					>
-						<AddCircleIcon style={{ fontSize: 60 }} />
+	const DialogTitle = withStyles(styles)((props) => {
+		const { children, classes, onClose, ...other } = props;
+		return (
+			<MuiDialogTitle disableTypography className={classes.root} {...other}>
+				<Typography variant="h6">{children}</Typography>
+				{onClose ? (
+					<IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
+						<CloseIcon />
 					</IconButton>
-					<Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
-						<AppBar className={classes.appBar}>
-							<Toolbar>
-								<IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
-									<CloseIcon />
-								</IconButton>
-								<Typography variant="h6" className={classes.title}>
-									{this.state.buttonType === 'Edit' ? 'Edit Todo' : 'Create a new Todo'}
-								</Typography>
-								<Button
-									autoFocus
-									color="inherit"
-									onClick={handleSubmit}
-									className={classes.submitButton}
-								>
-									{this.state.buttonType === 'Edit' ? 'Save' : 'Submit'}
-								</Button>
-							</Toolbar>
-						</AppBar>
+				) : null}
+			</MuiDialogTitle>
+		);
+	});
 
-						<form className={classes.form} noValidate>
-							<Grid container spacing={2}>
-								<Grid item xs={12}>
-									<TextField
-										variant="outlined"
-										required
-										fullWidth
-										id="todoTitle"
-										label="Todo Title"
-										name="title"
-										autoComplete="todoTitle"
-										helperText={errors.title}
-										value={this.state.title}
-										error={errors.title ? true : false}
-										onChange={this.handleChange}
-									/>
-								</Grid>
-								<Grid item xs={12}>
-									<TextField
-										variant="outlined"
-										required
-										fullWidth
-										id="todoDetails"
-										label="Todo Details"
-										name="body"
-										autoComplete="todoDetails"
-										multiline
-										rows={25}
-										rowsMax={25}
-										helperText={errors.body}
-										error={errors.body ? true : false}
-										onChange={this.handleChange}
-										value={this.state.body}
-									/>
-								</Grid>
-							</Grid>
-						</form>
-					</Dialog>
-
-					<Grid container spacing={2}>
-						{this.state.todos.map((todo) => (
-							<Grid item xs={12} sm={6}>
-								<Card className={classes.root} variant="outlined">
-									<CardContent>
-										<Typography variant="h5" component="h2">
-											{todo.title}
-										</Typography>
-										<Typography className={classes.pos} color="textSecondary">
-											{dayjs(todo.createdAt).fromNow()}
-										</Typography>
-										<Typography variant="body2" component="p">
-											{`${todo.body.substring(0, 65)}`}
-										</Typography>
-									</CardContent>
-									<CardActions>
-										<Button size="small" color="primary" onClick={() => this.handleViewOpen({ todo })}>
-											{' '}
-											View{' '}
-										</Button>
-										<Button size="small" color="primary" onClick={() => this.handleEditClickOpen({ todo })}>
-											Edit
-										</Button>
-										<Button size="small" color="primary" onClick={() => this.deleteTodoHandler({ todo })}>
-											Delete
-										</Button>
-									</CardActions>
-								</Card>
-							</Grid>
-						))}
-					</Grid>
-
-					<Dialog
-						onClose={handleViewClose}
-						aria-labelledby="customized-dialog-title"
-						open={viewOpen}
-						fullWidth
-						classes={{ paperFullWidth: classes.dialogeStyle }}
-					>
-						<DialogTitle id="customized-dialog-title" onClose={handleViewClose}>
-							{this.state.title}
-						</DialogTitle>
-						<DialogContent dividers>
-							<TextField
-								fullWidth
-								id="todoDetails"
-								name="body"
-								multiline
-								readonly
-								rows={1}
-								rowsMax={25}
-								value={this.state.body}
-								InputProps={{
-									disableUnderline: true
-								}}
-							/>
-						</DialogContent>
-					</Dialog>
-				</main>
-			);
+	const DialogContent = withStyles((theme) => ({
+		viewRoot: {
+			padding: theme.spacing(2)
 		}
+	}))(MuiDialogContent);
+
+	dayjs.extend(relativeTime);
+
+	const handleClickOpen = () => {
+		settodoId('');
+		settitle('');
+		setbody('');
+		setbuttonType("");
+		setopen(true);
+	};
+
+	const handleSubmit = (event) => {
+		authMiddleWare(history);
+		event.preventDefault();
+		const userTodo = {
+			title,
+			body
+		};
+		let options = {};
+		if (buttonType === 'Edit') {
+			options = {
+				url: `/todos/${todoId}`,
+				method: 'put',
+				data: userTodo
+			};
+		} else {
+			options = {
+				url: '/todos',
+				method: 'post',
+				data: userTodo
+			};
+		}
+		const authToken = localStorage.getItem('AuthToken');
+		axios.defaults.headers.common = { Authorization: `${authToken}` };
+		axios(options)
+			.then(() => {
+				setopen(false);
+				window.location.reload();
+			})
+			.catch((error) => {
+				setopen(true);
+				seterrors( error.response.data)
+				console.log(error);
+			});
+	};
+
+	const handleViewClose = () => {
+		setviewOpen(false);
+	};
+
+	const handleClose = (event) => {
+		setopen(false);
+	};
+
+	if (uiLoading === true) {
+		return (
+			<main className={classes.content}>
+				<div className={classes.toolbar} />
+				{uiLoading && <CircularProgress size={150} className={classes.uiProgess} />}
+			</main>
+		);
+	} else {
+		return (
+			<main className={classes.content}>
+				<div className={classes.toolbar} />
+
+				<IconButton
+					className={classes.floatingButton}
+					color="primary"
+					aria-label="Add Todo"
+					onClick={handleClickOpen}
+				>
+					<AddCircleIcon style={{ fontSize: 60 }} />
+				</IconButton>
+				<Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
+					<AppBar className={classes.appBar}>
+						<Toolbar>
+							<IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
+								<CloseIcon />
+							</IconButton>
+							<Typography variant="h6" className={classes.title}>
+								{buttonType === 'Edit' ? 'Edit Todo' : 'Create a new Todo'}
+							</Typography>
+							<Button
+								autoFocus
+								color="inherit"
+								onClick={handleSubmit}
+								className={classes.submitButton}
+							>
+								{buttonType === 'Edit' ? 'Save' : 'Submit'}
+							</Button>
+						</Toolbar>
+					</AppBar>
+
+					<form className={classes.form} noValidate>
+						<Grid container spacing={2}>
+							<Grid item xs={12}>
+								<TextField
+									variant="outlined"
+									required
+									fullWidth
+									id="todoTitle"
+									label="Todo Title"
+									name="title"
+									autoComplete="todoTitle"
+									helperText={errors.title}
+									value={title}
+									error={errors.title ? true : false}
+									onChange={(e) => settitle(e.target.value)}
+								/>
+							</Grid>
+							<Grid item xs={12}>
+								<TextField
+									variant="outlined"
+									required
+									fullWidth
+									id="todoDetails"
+									label="Todo Details"
+									name="body"
+									autoComplete="todoDetails"
+									multiline
+									rows={25}
+									rowsMax={25}
+									helperText={errors.body}
+									error={errors.body ? true : false}
+									onChange={ (e) => setbody(e.target.value)}
+									value={body}
+								/>
+							</Grid>
+						</Grid>
+					</form>
+				</Dialog>
+
+				<Grid container spacing={2}>
+					{todos.map((todo) => (
+						<Grid item xs={12} sm={6}>
+							<Card className={classes.root} variant="outlined">
+								<CardContent>
+									<Typography variant="h5" component="h2">
+										{todo.title}
+									</Typography>
+									<Typography className={classes.pos} color="textSecondary">
+										{dayjs(todo.createdAt).fromNow()}
+									</Typography>
+									<Typography variant="body2" component="p">
+										{`${todo.body.substring(0, 65)}`}
+									</Typography>
+								</CardContent>
+								<CardActions>
+									<Button size="small" color="primary" onClick={() => handleViewOpen({ todo })}>
+										{' '}
+										View{' '}
+									</Button>
+									<Button size="small" color="primary" onClick={() => handleEditClickOpen({ todo })}>
+										Edit
+									</Button>
+									<Button size="small" color="primary" onClick={() => deleteTodoHandler({ todo })}>
+										Delete
+									</Button>
+								</CardActions>
+							</Card>
+						</Grid>
+					))}
+				</Grid>
+
+				<Dialog
+					onClose={handleViewClose}
+					aria-labelledby="customized-dialog-title"
+					open={viewOpen}
+					fullWidth
+					classes={{ paperFullWidth: classes.dialogeStyle }}
+				>
+					<DialogTitle id="customized-dialog-title" onClose={handleViewClose}>
+						{title}
+					</DialogTitle>
+					<DialogContent dividers>
+						<TextField
+							fullWidth
+							id="todoDetails"
+							name="body"
+							multiline
+							readonly
+							rows={1}
+							rowsMax={25}
+							value={body}
+							InputProps={{
+								disableUnderline: true
+							}}
+						/>
+					</DialogContent>
+				</Dialog>
+			</main>
+		);
 	}
+	
 }
 
-export default withStyles(styles)(todo);
+export default withStyles(styles)(Todo);

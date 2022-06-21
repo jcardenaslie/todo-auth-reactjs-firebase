@@ -1,4 +1,6 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useHistory } from "react-router-dom";
+
 import axios from 'axios';
 
 import Account from '../components/account';
@@ -61,132 +63,128 @@ const styles = (theme) => ({
 	toolbar: theme.mixins.toolbar
 });
 
-class home extends Component {
-	state = {
-		render: false
+function Home (props) {
+	
+	const history = useHistory();
+
+	const [render, setrender] = useState(false);
+	const [firstName, setfirstName] = useState("");
+	const [lastName, setlastName] = useState("");
+	const [profilePicture, setprofilePicture] = useState("");
+	const [uiLoading, setuiLoading] = useState(true);
+	const [imageLoading, setimageLoading] = useState(false);
+	const [email, setemail] = useState("");
+	const [phoneNumber, setphoneNumber] = useState("");
+	const [country, setcountry] = useState("");
+	const [username, setusername] = useState("");
+	const [errorMsg, seterrorMsg] = useState("");
+
+	const { classes } = props;
+
+	const loadAccountPage = (event) => {
+		setrender(true)
 	};
 
-	loadAccountPage = (event) => {
-		this.setState({ render: true });
+	const loadTodoPage = (event) => {
+		setrender(false)
 	};
 
-	loadTodoPage = (event) => {
-		this.setState({ render: false });
-	};
-
-	logoutHandler = (event) => {
+	const logoutHandler = (event) => {
 		localStorage.removeItem('AuthToken');
-		this.props.history.push('/login');
+		history.push('/login')
 	};
 
-	constructor(props) {
-		super(props);
-
-		this.state = {
-			firstName: '',
-			lastName: '',
-			profilePicture: '',
-			uiLoading: true,
-			imageLoading: false
-		};
-	}
-
-	componentWillMount = () => {
-		authMiddleWare(this.props.history);
+	useEffect ( () =>{
+		authMiddleWare(history);
 		const authToken = localStorage.getItem('AuthToken');
 		axios.defaults.headers.common = { Authorization: `${authToken}` };
 		axios
 			.get('/user')
 			.then((response) => {
 				console.log(response.data);
-				this.setState({
-					firstName: response.data.userCredentials.firstName,
-					lastName: response.data.userCredentials.lastName,
-					email: response.data.userCredentials.email,
-					phoneNumber: response.data.userCredentials.phoneNumber,
-					country: response.data.userCredentials.country,
-					username: response.data.userCredentials.username,
-					uiLoading: false,
-					profilePicture: response.data.userCredentials.imageUrl
-				});
+				setfirstName( response.data.userCredentials.firstName)
+				setlastName( response.data.userCredentials.lastName)
+				setemail ( response.data.userCredentials.email)
+				setphoneNumber( response.data.userCredentials.phoneNumber)
+				setcountry ( response.data.userCredentials.country)
+				setusername( response.data.userCredentials.username)
+				setuiLoading ( false )
+				setprofilePicture( response.data.userCredentials.imageUrl)
 			})
 			.catch((error) => {
 				if (error.response.status === 403) {
-					this.props.history.push('/login');
+					history.push('/login')
 				}
 				console.log(error);
-				this.setState({ errorMsg: 'Error in retrieving the data' });
+				seterrorMsg('Error in retrieving the data');
 			});
-	};
-
-	render() {
-		const { classes } = this.props;
-		if (this.state.uiLoading === true) {
-			return (
-				<div className={classes.root}>
-					{this.state.uiLoading && <CircularProgress size={150} className={classes.uiProgess} />}
-				</div>
-			);
-		} else {
-			return (
-				<div className={classes.root}>
-					<CssBaseline />
-					<AppBar position="fixed" className={classes.appBar}>
-						<Toolbar>
-							<Typography variant="h6" noWrap>
-								TodoApp
-							</Typography>
-						</Toolbar>
-					</AppBar>
-					<Drawer
-						className={classes.drawer}
-						variant="permanent"
-						classes={{
-							paper: classes.drawerPaper
-						}}
-					>
-						<div className={classes.toolbar} />
-						<Divider />
-						<center>
-							<Avatar src={this.state.profilePicture} className={classes.avatar} />
-							<p>
+	}, [])
+		
+	if (uiLoading === true) {
+		return (
+			<div className={classes.root}>
+				{ uiLoading && <CircularProgress size={150} className={classes.uiProgess} />}
+			</div>
+		);
+	} else {
+		return (
+			<div className={classes.root}>
+				<CssBaseline />
+				<AppBar position="fixed" className={classes.appBar}>
+					<Toolbar>
+						<Typography variant="h6" noWrap>
+							TodoApp
+						</Typography>
+					</Toolbar>
+				</AppBar>
+				<Drawer
+					className={classes.drawer}
+					variant="permanent"
+					classes={{
+						paper: classes.drawerPaper
+					}}
+				>
+					<div className={classes.toolbar} />
+					<Divider />
+					<center>
+						<Avatar src={profilePicture} className={classes.avatar} />
+						<p>
+							{' '}
+							{firstName} {lastName}
+						</p>
+					</center>
+					<Divider />
+					<List>
+						<ListItem button key="Todo" onClick={loadTodoPage}>
+							<ListItemIcon>
 								{' '}
-								{this.state.firstName} {this.state.lastName}
-							</p>
-						</center>
-						<Divider />
-						<List>
-							<ListItem button key="Todo" onClick={this.loadTodoPage}>
-								<ListItemIcon>
-									{' '}
-									<NotesIcon />{' '}
-								</ListItemIcon>
-								<ListItemText primary="Todo" />
-							</ListItem>
+								<NotesIcon />{' '}
+							</ListItemIcon>
+							<ListItemText primary="Todo" />
+						</ListItem>
 
-							<ListItem button key="Account" onClick={this.loadAccountPage}>
-								<ListItemIcon>
-									{' '}
-									<AccountBoxIcon />{' '}
-								</ListItemIcon>
-								<ListItemText primary="Account" />
-							</ListItem>
+						<ListItem button key="Account" onClick={loadAccountPage}>
+							<ListItemIcon>
+								{' '}
+								<AccountBoxIcon />{' '}
+							</ListItemIcon>
+							<ListItemText primary="Account" />
+						</ListItem>
 
-							<ListItem button key="Logout" onClick={this.logoutHandler}>
-								<ListItemIcon>
-									{' '}
-									<ExitToAppIcon />{' '}
-								</ListItemIcon>
-								<ListItemText primary="Logout" />
-							</ListItem>
-						</List>
-					</Drawer>
+						<ListItem button key="Logout" onClick={logoutHandler}>
+							<ListItemIcon>
+								{' '}
+								<ExitToAppIcon />{' '}
+							</ListItemIcon>
+							<ListItemText primary="Logout" />
+						</ListItem>
+					</List>
+				</Drawer>
 
-					<div>{this.state.render ? <Account /> : <Todo />}</div>
-				</div>
-			);
-		}
+				<div>{render ? <Account /> : <Todo />}</div>
+			</div>
+		);
 	}
 }
 
-export default withStyles(styles)(home);
+export default withStyles(styles)(Home);

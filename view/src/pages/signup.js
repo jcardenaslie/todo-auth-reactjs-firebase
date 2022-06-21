@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, { useState} from 'react';
+import { useHistory } from "react-router-dom";
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -36,71 +37,49 @@ const styles = (theme) => ({
 	}
 });
 
-class signup extends Component {
-	constructor(props) {
-		super(props);
+function Signup (props) {
 
-		this.state = {
-			firstName: '',
-			lastName: '',
-			phoneNumber: '',
-			country: '',
-			username: '',
-			email: '',
-			password: '',
-			confirmPassword: '',
-			errors: [],
-			loading: false
-		};
-	}
+	const history = useHistory();
 
-	componentWillReceiveProps(nextProps) {
-		if (nextProps.UI.errors) {
-			this.setState({
-				errors: nextProps.UI.errors
-			});
-		}
-	}
+	const [firstName, setfirstName] = useState("");
+	const [lastName, setlastName] = useState("");
+	const [phoneNumber, setphoneNumber] = useState("");
+	const [country, setcountry] = useState("");
+	const [username, setusername] = useState("");
+	const [email, setemail] = useState("");
+	const [password, setpassword] = useState("");
+	const [confirmPassword, setconfirmPassword] = useState("");
+	const [errors, seterrors] = useState([]);
+	const [loading, setloading] = useState(false);
 
-	handleChange = (event) => {
-		this.setState({
-			[event.target.name]: event.target.value
-		});
-	};
-
-	handleSubmit = (event) => {
+	const { classes } = props;
+	
+	const handleSubmit = (event) => {
 		event.preventDefault();
-		this.setState({ loading: true });
+		setloading(true)
 		const newUserData = {
-			firstName: this.state.firstName,
-			lastName: this.state.lastName,
-			phoneNumber: this.state.phoneNumber,
-			country: this.state.country,
-			username: this.state.username,
-			email: this.state.email,
-			password: this.state.password,
-			confirmPassword: this.state.confirmPassword
+			firstName,
+			lastName,
+			phoneNumber,
+			country,
+			username,
+			email,
+			password,
+			confirmPassword,
 		};
 		axios
 			.post('/signup', newUserData)
 			.then((response) => {
 				localStorage.setItem('AuthToken', `Bearer ${response.data.token}`);
-				this.setState({ 
-					loading: false,
-				});	
-				this.props.history.push('/');
+				setloading(false)
+				history.push('/')
 			})
 			.catch((error) => {
-				this.setState({
-					errors: error.response.data,
-					loading: false
-				});
+				seterrors(error.response.data)
+				setloading(false)
 			});
 	};
 
-	render() {
-		const { classes } = this.props;
-		const { errors, loading } = this.state;
 		return (
 			<Container component="main" maxWidth="xs">
 				<CssBaseline />
@@ -124,7 +103,7 @@ class signup extends Component {
 									autoComplete="firstName"
 									helperText={errors.firstName}
 									error={errors.firstName ? true : false}
-									onChange={this.handleChange}
+									onChange={ (e) => setfirstName( e.target.value )}
 								/>
 							</Grid>
 							<Grid item xs={12} sm={6}>
@@ -138,7 +117,7 @@ class signup extends Component {
 									autoComplete="lastName"
 									helperText={errors.lastName}
 									error={errors.lastName ? true : false}
-									onChange={this.handleChange}
+									onChange={ (e) => setlastName( e.target.value )}
 								/>
 							</Grid>
 
@@ -153,7 +132,7 @@ class signup extends Component {
 									autoComplete="username"
 									helperText={errors.username}
 									error={errors.username ? true : false}
-									onChange={this.handleChange}
+									onChange={ (e) => setusername( e.target.value )}
 								/>
 							</Grid>
 
@@ -169,7 +148,7 @@ class signup extends Component {
 									pattern="[7-9]{1}[0-9]{9}"
 									helperText={errors.phoneNumber}
 									error={errors.phoneNumber ? true : false}
-									onChange={this.handleChange}
+									onChange={ (e) => setphoneNumber( e.target.value )}
 								/>
 							</Grid>
 
@@ -184,7 +163,7 @@ class signup extends Component {
 									autoComplete="email"
 									helperText={errors.email}
 									error={errors.email ? true : false}
-									onChange={this.handleChange}
+									onChange={ (e) => setemail( e.target.value )}
 								/>
 							</Grid>
 
@@ -199,7 +178,7 @@ class signup extends Component {
 									autoComplete="country"
 									helperText={errors.country}
 									error={errors.country ? true : false}
-									onChange={this.handleChange}
+									onChange={ (e) => setcountry( e.target.value )}
 								/>
 							</Grid>
 
@@ -215,7 +194,7 @@ class signup extends Component {
 									autoComplete="current-password"
 									helperText={errors.password}
 									error={errors.password ? true : false}
-									onChange={this.handleChange}
+									onChange={ (e) => setpassword( e.target.value )}
 								/>
 							</Grid>
 							<Grid item xs={12}>
@@ -228,7 +207,7 @@ class signup extends Component {
 									type="password"
 									id="confirmPassword"
 									autoComplete="current-password"
-									onChange={this.handleChange}
+									onChange={ (e) => setconfirmPassword( e.target.value )}
 								/>
 							</Grid>
 						</Grid>
@@ -238,15 +217,15 @@ class signup extends Component {
 							variant="contained"
 							color="primary"
 							className={classes.submit}
-							onClick={this.handleSubmit}
-                            disabled={loading || 
-                                !this.state.email || 
-                                !this.state.password ||
-                                !this.state.firstName || 
-                                !this.state.lastName ||
-                                !this.state.country || 
-                                !this.state.username || 
-                                !this.state.phoneNumber}
+							onClick={handleSubmit}
+							disabled={loading || 
+									!email || 
+									!password ||
+									!firstName || 
+									!lastName ||
+									!country || 
+									!username || 
+									!phoneNumber}
 						>
 							Sign Up
 							{loading && <CircularProgress size={30} className={classes.progess} />}
@@ -262,7 +241,6 @@ class signup extends Component {
 				</div>
 			</Container>
 		);
-	}
 }
 
-export default withStyles(styles)(signup);
+export default withStyles(styles)(Signup);
