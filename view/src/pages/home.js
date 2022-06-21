@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import axios from 'axios';
 
@@ -65,7 +65,7 @@ const styles = (theme) => ({
 
 function Home (props) {
 	
-	const history = useHistory();
+	const navigate = useNavigate();
 
 	const [render, setrender] = useState(false);
 	const [firstName, setfirstName] = useState("");
@@ -91,17 +91,16 @@ function Home (props) {
 
 	const logoutHandler = (event) => {
 		localStorage.removeItem('AuthToken');
-		history.push('/login')
+		navigate('/login')
 	};
 
 	useEffect ( () =>{
-		authMiddleWare(history);
+		authMiddleWare(navigate);
 		const authToken = localStorage.getItem('AuthToken');
 		axios.defaults.headers.common = { Authorization: `${authToken}` };
 		axios
 			.get('/user')
 			.then((response) => {
-				console.log(response.data);
 				setfirstName( response.data.userCredentials.firstName)
 				setlastName( response.data.userCredentials.lastName)
 				setemail ( response.data.userCredentials.email)
@@ -113,9 +112,9 @@ function Home (props) {
 			})
 			.catch((error) => {
 				if (error.response.status === 403) {
-					history.push('/login')
+					navigate('/login')
 				}
-				console.log(error);
+				console.error(error);
 				seterrorMsg('Error in retrieving the data');
 			});
 	}, [])

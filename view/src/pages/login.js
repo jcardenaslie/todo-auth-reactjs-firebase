@@ -1,6 +1,6 @@
 // Material UI components
-import React, { useState, useEffect } from 'react';
-import { useHistory } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
@@ -46,7 +46,7 @@ const styles = (theme) => ({
 
 function Login (props) {
 
-	const history = useHistory();
+	const navigate = useNavigate();
 
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
@@ -57,7 +57,6 @@ function Login (props) {
 
 	const handleSubmit = (event) => {
 		event.preventDefault();
-		console.log(email, password);
 		setLoading(true);
 		const userData = {
 			email,
@@ -67,13 +66,12 @@ function Login (props) {
 		axios
 			.post('/login', userData)
 			.then( (response) => {
-				console.log(response)
 				localStorage.setItem('AuthToken', `Bearer ${response.data.token}`);
 				setLoading(false)
-				history.push('/');
+				navigate('/');
 			})
 			.catch((error) => {
-				console.log(error)
+				console.error(error)
 				setLoading(false);
 				setErrors(error.response.data)
 			});

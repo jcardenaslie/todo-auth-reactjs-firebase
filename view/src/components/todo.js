@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import withStyles from '@material-ui/core/styles/withStyles';
 import Typography from '@material-ui/core/Typography';
@@ -96,7 +96,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 function Todo ( props ) {
 
-	const history = useHistory()
+	const navigate = useNavigate()
 
 	const [todos, settodos] = useState("");
 	const [title, settitle] = useState("");
@@ -112,7 +112,7 @@ function Todo ( props ) {
 	const { classes } = props;
 
 	useEffect ( ()=> {
-		authMiddleWare(history);
+		authMiddleWare(navigate);
 		const authToken = localStorage.getItem('AuthToken');
 		axios.defaults.headers.common = { Authorization: `${authToken}` };
 		axios
@@ -123,12 +123,12 @@ function Todo ( props ) {
 				setuiLoading(false)
 			})
 			.catch((err) => {
-				console.log(err);
+				console.error(err);
 			});
 	},[]);
 
 	function deleteTodoHandler(data) {
-		authMiddleWare(history);
+		authMiddleWare(navigate);
 		const authToken = localStorage.getItem('AuthToken');
 		axios.defaults.headers.common = { Authorization: `${authToken}` };
 		let todoId = data.todo.todoId;
@@ -138,7 +138,7 @@ function Todo ( props ) {
 				window.location.reload();
 			})
 			.catch((err) => {
-				console.log(err);
+				console.error(err);
 			});
 	}
 
@@ -187,7 +187,7 @@ function Todo ( props ) {
 	};
 
 	const handleSubmit = (event) => {
-		authMiddleWare(history);
+		authMiddleWare(navigate);
 		event.preventDefault();
 		const userTodo = {
 			title,
@@ -217,7 +217,7 @@ function Todo ( props ) {
 			.catch((error) => {
 				setopen(true);
 				seterrors( error.response.data)
-				console.log(error);
+				console.error(error);
 			});
 	};
 

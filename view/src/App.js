@@ -1,10 +1,10 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider as MuiThemeProvider } from '@material-ui/core/styles';
 import { createTheme } from '@material-ui/core/styles';
-import login from './pages/login';
-import signup from './pages/signup';
-import home from './pages/home';
+import Login from './pages/login';
+import Signup from './pages/signup';
+import Home from './pages/home';
 
 const theme = createTheme({
 	palette: {
@@ -22,11 +22,11 @@ function App() {
 		<MuiThemeProvider theme={theme}>
 			<Router>
 				<div>
-					<Switch>
-						<Route exact path="/" component={home} />
-						<Route exact path="/login" component={login} />
-						<Route exact path="/signup" component={signup} />
-					</Switch>
+					<Routes>
+						<Route exact path="/" element={ <Home />} />
+						<Route exact path="/login" element={ <Login />} />
+						<Route exact path="/signup" element={ <Signup />} />
+					</Routes>
 				</div>
 			</Router>
 		</MuiThemeProvider>

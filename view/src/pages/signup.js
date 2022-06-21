@@ -1,5 +1,5 @@
 import React, { useState} from 'react';
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -39,7 +39,7 @@ const styles = (theme) => ({
 
 function Signup (props) {
 
-	const history = useHistory();
+	const navigate = useNavigate();
 
 	const [firstName, setfirstName] = useState("");
 	const [lastName, setlastName] = useState("");
@@ -72,7 +72,7 @@ function Signup (props) {
 			.then((response) => {
 				localStorage.setItem('AuthToken', `Bearer ${response.data.token}`);
 				setloading(false)
-				history.push('/')
+				navigate('/')
 			})
 			.catch((error) => {
 				seterrors(error.response.data)

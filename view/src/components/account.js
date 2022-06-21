@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import withStyles from '@material-ui/core/styles/withStyles';
 import Typography from '@material-ui/core/Typography';
@@ -62,7 +62,7 @@ const styles = (theme) => ({
 
 function Account (props) {
 
-	const history = useHistory();
+	const navigate = useNavigate();
 
 	const { classes, ...rest } = props;
 
@@ -81,14 +81,12 @@ function Account (props) {
 	const [content, setcontent] = useState();
 
 	useEffect ( () => {
-		authMiddleWare(history);
+		authMiddleWare(navigate);
 		const authToken = localStorage.getItem('AuthToken');
 		axios.defaults.headers.common = { Authorization: `${authToken}` };
 		axios
 			.get('/user')
 			.then((response) => {
-				console.log(response.data);
-
 				setfirstName(response.data.userCredentials.firstName);
 				setlastName(response.data.userCredentials.lastName);
 				setemail(response.data.userCredentials.email);
@@ -99,9 +97,9 @@ function Account (props) {
 			})
 			.catch((error) => {
 				if (error.response.status === 403) {
-					history.push('/login')
+					navigate('/login')
 				}
-				console.log(error);
+				console.error(error);
 				seterrorMsg('Error in retrieving the data')
 			});
 	},[]);
@@ -113,7 +111,7 @@ function Account (props) {
 	const profilePictureHandler = (event) => {
 		event.preventDefault();
 		setuiLoading(true);
-		authMiddleWare(history);
+		authMiddleWare(navigate);
 		const authToken = localStorage.getItem('AuthToken');
 		let form_data = new FormData();
 		form_data.append('image', image);
@@ -130,9 +128,9 @@ function Account (props) {
 			})
 			.catch((error) => {
 				if (error.response.status === 403) {
-					history.push('/login')
+					navigate('/login')
 				}
-				console.log(error);
+				console.error(error);
 				setuiLoading(false);
 				setimageError ('Error in posting the data')
 			});
@@ -141,7 +139,7 @@ function Account (props) {
 	const updateFormValues = (event) => {
 		event.preventDefault();
 		setbuttonLoading(true)
-		authMiddleWare(history);
+		authMiddleWare(navigate);
 		const authToken = localStorage.getItem('AuthToken');
 		axios.defaults.headers.common = { Authorization: `${authToken}` };
 		const formRequest = {
@@ -156,9 +154,9 @@ function Account (props) {
 			})
 			.catch((error) => {
 				if (error.response.status === 403) {
-					history.push('/login')
+					navigate('/login')
 				}
-				console.log(error);
+				console.error(error);
 				setbuttonLoading(false)
 			});
 	};
