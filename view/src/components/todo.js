@@ -143,21 +143,17 @@ function Todo ( props ) {
 	}
 
 	function handleEditClickOpen(data) {
-		this.setState({
-			title: data.todo.title,
-			body: data.todo.body,
-			todoId: data.todo.todoId,
-			buttonType: 'Edit',
-			open: true
-		});
+		settitle(data.todo.title);
+		setbody(data.todo.body);
+		settodoId(data.todo.todoId);
+		setbuttonType('Edit');
+		setopen(true);
 	}
 
 	function handleViewOpen(data) {
-		this.setState({
-			title: data.todo.title,
-			body: data.todo.body,
-			viewOpen: true
-		});
+		settitle(data.todo.title);
+		setbody(data.todo.body);
+		setviewOpen(true);
 	}
 
 	const DialogTitle = withStyles(styles)((props) => {
